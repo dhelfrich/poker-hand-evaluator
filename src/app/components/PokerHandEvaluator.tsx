@@ -1,6 +1,6 @@
 // app/components/PokerHandEvaluator.tsx
 'use client';
-import { useState, useMemo } from "react";
+import { useState} from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 type Suit = "hearts" | "diamonds" | "clubs" | "spades";
 type Rank = "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K" | "A";
 type PlayingCard = { suit: Suit; rank: Rank };
-/* type HandRank = 
+type HandRank = 
   | "Royal Flush"
   | "Straight Flush"
   | "Four of a Kind"
@@ -19,8 +19,8 @@ type PlayingCard = { suit: Suit; rank: Rank };
   | "Three of a Kind"
   | "Two Pair"
   | "Pair"
-  | "High Card";
-  */
+  | "High Card"
+  | null
 
 const suits: Suit[] = ["hearts", "diamonds", "clubs", "spades"];
 const ranks: Rank[] = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
@@ -30,11 +30,9 @@ const PokerHandEvaluator: React.FC = () => {
   const [error, setError] = useState<string>("");
 
   // Generate all possible cards for selection
-  const allCards = useMemo(() => {
-    return suits.flatMap(suit => 
-      ranks.map(rank => ({ suit, rank }))
+  const allCards = suits.flatMap(suit => ranks.map(rank => ({ suit, rank }))
     );
-  }, []);
+  
 
   // Handle card selection/deselection
   const toggleCard = (card: PlayingCard) => {
@@ -56,7 +54,7 @@ const PokerHandEvaluator: React.FC = () => {
   };
 
   // Poker hand evaluation logic
-  const evaluateHand = useMemo(() => {
+  const evaluateHand = (): HandRank => {
     if (selectedCards.length !== 5) return null;
 
     const values = selectedCards.map(card => 
@@ -89,7 +87,7 @@ const PokerHandEvaluator: React.FC = () => {
     if (counts[0] === 2 && counts[1] === 2) return "Two Pair";
     if (counts[0] === 2) return "Pair";
     return "High Card";
-  }, [selectedCards]);
+  };
 
   // Suit symbols for display
   const suitSymbols: Record<Suit, string> = {
@@ -120,15 +118,15 @@ const PokerHandEvaluator: React.FC = () => {
                   bg-white`}
                 onClick={() => toggleCard(card)}
               >
-                {card.rank}{suitSymbols[card.suit]}
+                {card.rank}<br/>{suitSymbols[card.suit]}
               </motion.div>
             ))}
           </div>
 
           {/* Hand Evaluation */}
-          {selectedCards.length === 5 && evaluateHand && (
+          {selectedCards.length === 5 && evaluateHand() && (
             <div className="text-center text-xl font-semibold text-green-600">
-              Hand Rank: {evaluateHand}
+              Hand Rank: {evaluateHand()}
             </div>
           )}
           {error && (
@@ -141,7 +139,7 @@ const PokerHandEvaluator: React.FC = () => {
           )}
 
           {/* Card Selection Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-13 gap-1">
             {allCards.map(card => {
               const isSelected = selectedCards.some(c => 
                 c.rank === card.rank && c.suit === card.suit
@@ -156,7 +154,7 @@ const PokerHandEvaluator: React.FC = () => {
                   onClick={() => toggleCard(card)}
                   disabled={selectedCards.length >= 5 && !isSelected}
                 >
-                  {card.rank}{suitSymbols[card.suit]}
+                  {card.rank}<br/>{suitSymbols[card.suit]}
                 </Button>
               );
             })}
